@@ -1,6 +1,7 @@
 # Frigate NVR Configuration for 4x Sonoff CAM-PT2 (Thingino firmware)
 # Mosquitto broker at 192.168.6.1
 # Cameras on 192.168.5.1-4
+# No Home Assistant integration — standalone Frigate + MQTT
 
 mqtt:
   enabled: true
@@ -55,50 +56,63 @@ birdseye:
   enabled: true
   mode: objects
 
+# ──────────────────────────────────────────────
+# Object detection — comprehensive filters
+# Family: kids, pets (cats), visitors, vehicles
+# ──────────────────────────────────────────────
+
 objects:
   track:
+    # People & family
     - person
+    # Vehicles
     - car
-    - cat
-    - dog
     - bicycle
     - motorcycle
     - bus
     - truck
+    # Pets
+    - cat
+    - dog
+    - bird
+    # Kid / family items (COCO classes)
+    - teddy bear
+    - sports ball
+    - kite
+    - skateboard
+    - frisbee
+    - baseball bat
+    - baseball glove
+    - surfboard
+    - snowboard
+    # Carried items / security
     - backpack
     - umbrella
     - handbag
     - suitcase
   filters:
+    # ── People ──
     person:
-      min_area: 4000
+      min_area: 3000
       max_area: 200000
-      min_score: 0.55
-      threshold: 0.7
-      min_ratio: 0.3
-      max_ratio: 2.5
+      min_score: 0.5
+      threshold: 0.65
+      min_ratio: 0.2
+      max_ratio: 3.0
+
+    # ── Vehicles ──
     car:
       min_area: 8000
       max_area: 300000
       min_score: 0.5
       threshold: 0.65
-    cat:
-      min_area: 1500
-      max_area: 60000
-      min_score: 0.45
-      threshold: 0.6
-    dog:
-      min_area: 2000
-      max_area: 80000
-      min_score: 0.45
-      threshold: 0.6
     bicycle:
-      min_area: 3000
+      min_area: 2000
       max_area: 100000
-      min_score: 0.5
-      threshold: 0.65
+      min_score: 0.45
+      threshold: 0.6
     motorcycle:
-      min_area: 5000
+      min_area: 4000
       max_area: 150000
       min_score: 0.5
       threshold: 0.65
@@ -112,67 +126,195 @@ objects:
       max_area: 300000
       min_score: 0.5
       threshold: 0.65
+
+    # ── Pets ──
+    cat:
+      min_area: 1000
+      max_area: 60000
+      min_score: 0.4
+      threshold: 0.55
+    dog:
+      min_area: 1500
+      max_area: 80000
+      min_score: 0.4
+      threshold: 0.55
+    bird:
+      min_area: 500
+      max_area: 30000
+      min_score: 0.35
+      threshold: 0.5
+
+    # ── Kid / family items ──
+    teddy bear:
+      min_area: 500
+      max_area: 40000
+      min_score: 0.35
+      threshold: 0.5
+    sports ball:
+      min_area: 300
+      max_area: 25000
+      min_score: 0.35
+      threshold: 0.5
+    kite:
+      min_area: 500
+      max_area: 50000
+      min_score: 0.35
+      threshold: 0.5
+    skateboard:
+      min_area: 1000
+      max_area: 40000
+      min_score: 0.4
+      threshold: 0.55
+    frisbee:
+      min_area: 200
+      max_area: 15000
+      min_score: 0.35
+      threshold: 0.5
+    baseball bat:
+      min_area: 300
+      max_area: 20000
+      min_score: 0.35
+      threshold: 0.5
+    baseball glove:
+      min_area: 300
+      max_area: 15000
+      min_score: 0.35
+      threshold: 0.5
+    surfboard:
+      min_area: 2000
+      max_area: 80000
+      min_score: 0.4
+      threshold: 0.55
+    snowboard:
+      min_area: 1500
+      max_area: 60000
+      min_score: 0.4
+      threshold: 0.55
+
+    # ── Carried items / security ──
     backpack:
       min_area: 1000
       max_area: 40000
       min_score: 0.4
       threshold: 0.55
     umbrella:
-      min_area: 2000
+      min_area: 1500
       max_area: 60000
       min_score: 0.4
       threshold: 0.55
     handbag:
-      min_area: 800
+      min_area: 600
       max_area: 30000
-      min_score: 0.4
-      threshold: 0.55
+      min_score: 0.35
+      threshold: 0.5
     suitcase:
       min_area: 2000
       max_area: 60000
       min_score: 0.4
       threshold: 0.55
 
+# ──────────────────────────────────────────────
+# Audio detection — family, security, pets
+# ──────────────────────────────────────────────
+
 audio:
   enabled: true
   listen:
-    - bark
-    - scream
+    # Human / family
     - speech
     - yell
+    - scream
     - crying
     - laughter
-    - glass_breaking
-    - fire_alarm
-    - car_horn
-    - doorbell
+    - baby_cry
+    - children_shouting
+    - singing
+    - whistle
+    # Pets
+    - bark
     - dog
     - cat
+    - cat_purr
+    - growl
+    # Security / alert
+    - glass_breaking
+    - fire_alarm
+    - smoke_detector
+    - siren
+    - gunshot
+    - explosion
+    - car_horn
+    - doorbell
+    - knock
+    # Environment
+    - thunder
+    - water_running
+    - engine
+    - tire_screech
   filters:
-    bark:
-      threshold: 0.6
-    scream:
-      threshold: 0.65
+    # Human / family — lower thresholds for kid safety
     speech:
       threshold: 0.7
     yell:
-      threshold: 0.6
-    crying:
       threshold: 0.55
+    scream:
+      threshold: 0.5
+    crying:
+      threshold: 0.45
     laughter:
       threshold: 0.7
-    glass_breaking:
+    baby_cry:
+      threshold: 0.4
+    children_shouting:
       threshold: 0.5
-    fire_alarm:
-      threshold: 0.45
-    car_horn:
+    singing:
+      threshold: 0.7
+    whistle:
+      threshold: 0.6
+    # Pets
+    bark:
       threshold: 0.55
-    doorbell:
-      threshold: 0.5
     dog:
       threshold: 0.6
     cat:
+      threshold: 0.55
+    cat_purr:
+      threshold: 0.65
+    growl:
+      threshold: 0.5
+    # Security / alert — very sensitive
+    glass_breaking:
+      threshold: 0.4
+    fire_alarm:
+      threshold: 0.35
+    smoke_detector:
+      threshold: 0.35
+    siren:
+      threshold: 0.4
+    gunshot:
+      threshold: 0.35
+    explosion:
+      threshold: 0.35
+    car_horn:
+      threshold: 0.5
+    doorbell:
+      threshold: 0.45
+    knock:
+      threshold: 0.55
+    # Environment
+    thunder:
       threshold: 0.6
+    water_running:
+      threshold: 0.65
+    engine:
+      threshold: 0.6
+    tire_screech:
+      threshold: 0.5
+
+# ──────────────────────────────────────────────
+# Recording — tiered retention
+# On-camera SD also records independently via prudynt
+# ──────────────────────────────────────────────
 
 record:
   enabled: true
@@ -201,13 +343,16 @@ snapshots:
     mode: active_objects
 
 motion:
-  threshold: 30
-  contour_area: 200
+  threshold: 25
+  contour_area: 150
   improve_contrast: true
   lightning_threshold: 0.8
 
 # ──────────────────────────────────────────────
 # Camera definitions — 4x Sonoff CAM-PT2
+# All share global objects/audio/record defaults above.
+# Per-camera zones are placeholders — adjust coordinates
+# to match each camera's actual field of view.
 # ──────────────────────────────────────────────
 
 cameras:
@@ -253,6 +398,8 @@ cameras:
           - car
           - cat
           - dog
+          - teddy bear
+          - sports ball
     review:
       alerts:
         labels:
@@ -264,8 +411,13 @@ cameras:
         labels:
           - cat
           - dog
+          - bird
           - bicycle
           - motorcycle
+          - teddy bear
+          - sports ball
+          - kite
+          - skateboard
 
   ptz_02:
     enabled: true
@@ -309,6 +461,8 @@ cameras:
           - car
           - cat
           - dog
+          - teddy bear
+          - sports ball
     review:
       alerts:
         labels:
@@ -320,8 +474,13 @@ cameras:
         labels:
           - cat
           - dog
+          - bird
           - bicycle
           - motorcycle
+          - teddy bear
+          - sports ball
+          - kite
+          - skateboard
 
   ptz_03:
     enabled: true
@@ -365,6 +524,8 @@ cameras:
           - car
           - cat
           - dog
+          - teddy bear
+          - sports ball
     review:
       alerts:
         labels:
@@ -376,8 +537,13 @@ cameras:
         labels:
           - cat
           - dog
+          - bird
           - bicycle
           - motorcycle
+          - teddy bear
+          - sports ball
+          - kite
+          - skateboard
 
   ptz_04:
     enabled: true
@@ -421,6 +587,8 @@ cameras:
           - car
           - cat
           - dog
+          - teddy bear
+          - sports ball
     review:
       alerts:
         labels:
@@ -432,5 +600,10 @@ cameras:
         labels:
           - cat
           - dog
+          - bird
           - bicycle
           - motorcycle
+          - teddy bear
+          - sports ball
+          - kite
+          - skateboard
