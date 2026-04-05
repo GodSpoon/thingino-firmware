@@ -2,5 +2,51 @@
     "image": {
         "hflip": true,
         "vflip": true
+    },
+    "motion": {
+        "enabled": true,
+        "frame_height": 1080,
+        "frame_width": 1920,
+        "cooldown_time": 5,
+        "debounce_time": 0,
+        "init_time": 5,
+        "min_time": 1,
+        "monitor_stream": 1,
+        "motor_settle_ms": 1200,
+        "roi_0_x": 0,
+        "roi_0_y": 0,
+        "roi_1_x": 1919,
+        "roi_1_y": 1079,
+        "roi_count": 1,
+        "sensitivity": 2,
+        "skip_frame_count": 5,
+        "send2mqtt": true,
+        "send2storage": true,
+        "send2email": false,
+        "send2ftp": false,
+        "send2ntfy": false,
+        "send2telegram": false,
+        "send2webhook": false,
+        "playonspeaker": false
+    },
+    "recorder": {
+        "autostart": true,
+        "channel": 0,
+        "check_interval": 60,
+        "cleanup_enabled": true,
+        "device_path": "%hostname",
+        "duration": 60,
+        "enabled": true,
+        "filename": "%Y/%m/%d/%H-%M-%S",
+        "limit": 15,
+        "min_free_mb": 500,
+        "mount": "/mnt/mmc"
+    },
+    "stream1": {
+        "osd": {
+            "enabled": false
+        },
+        "fps": 10,
+        "gop": 10
     }
 }

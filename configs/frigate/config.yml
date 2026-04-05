@@ -1,0 +1,436 @@
+# Frigate NVR Configuration for 4x Sonoff CAM-PT2 (Thingino firmware)
+# Mosquitto broker at 192.168.6.1
+# Cameras on 192.168.5.1-4
+
+mqtt:
+  enabled: true
+  host: 192.168.6.1
+  port: 1883
+  topic_prefix: frigate
+  # Uncomment and set if your broker requires auth:
+  # user: mqtt_user
+  # password: mqtt_password
+
+detectors:
+  ov:
+    type: openvino
+    device: AUTO
+    model:
+      path: /openvino-model/ssdlite_mobilenet_v2.xml
+
+model:
+  width: 300
+  height: 300
+  input_tensor: nhwc
+  input_pixel_format: bgr
+  labelmap_path: /openvino-model/coco_91cl_bkgr.txt
+
+ffmpeg:
+  hwaccel_args: preset-vaapi
+
+go2rtc:
+  streams:
+    ptz_01:
+      - rtsp://thingino:thingino@192.168.5.1:554/ch0#backchannel=0#timeout=30
+    ptz_01_sub:
+      - rtsp://thingino:thingino@192.168.5.1:554/ch1#backchannel=0#timeout=30
+    ptz_02:
+      - rtsp://thingino:thingino@192.168.5.2:554/ch0#backchannel=0#timeout=30
+    ptz_02_sub:
+      - rtsp://thingino:thingino@192.168.5.2:554/ch1#backchannel=0#timeout=30
+    ptz_03:
+      - rtsp://thingino:thingino@192.168.5.3:554/ch0#backchannel=0#timeout=30
+    ptz_03_sub:
+      - rtsp://thingino:thingino@192.168.5.3:554/ch1#backchannel=0#timeout=30
+    ptz_04:
+      - rtsp://thingino:thingino@192.168.5.4:554/ch0#backchannel=0#timeout=30
+    ptz_04_sub:
+      - rtsp://thingino:thingino@192.168.5.4:554/ch1#backchannel=0#timeout=30
+
+# ──────────────────────────────────────────────
+# Global defaults applied to all cameras
+# ──────────────────────────────────────────────
+
+birdseye:
+  enabled: true
+  mode: objects
+
+objects:
+  track:
+    - person
+    - car
+    - cat
+    - dog
+    - bicycle
+    - motorcycle
+    - bus
+    - truck
+    - backpack
+    - umbrella
+    - handbag
+    - suitcase
+  filters:
+    person:
+      min_area: 4000
+      max_area: 200000
+      min_score: 0.55
+      threshold: 0.7
+      min_ratio: 0.3
+      max_ratio: 2.5
+    car:
+      min_area: 8000
+      max_area: 300000
+      min_score: 0.5
+      threshold: 0.65
+    cat:
+      min_area: 1500
+      max_area: 60000
+      min_score: 0.45
+      threshold: 0.6
+    dog:
+      min_area: 2000
+      max_area: 80000
+      min_score: 0.45
+      threshold: 0.6
+    bicycle:
+      min_area: 3000
+      max_area: 100000
+      min_score: 0.5
+      threshold: 0.65
+    motorcycle:
+      min_area: 5000
+      max_area: 150000
+      min_score: 0.5
+      threshold: 0.65
+    bus:
+      min_area: 15000
+      max_area: 350000
+      min_score: 0.5
+      threshold: 0.65
+    truck:
+      min_area: 10000
+      max_area: 300000
+      min_score: 0.5
+      threshold: 0.65
+    backpack:
+      min_area: 1000
+      max_area: 40000
+      min_score: 0.4
+      threshold: 0.55
+    umbrella:
+      min_area: 2000
+      max_area: 60000
+      min_score: 0.4
+      threshold: 0.55
+    handbag:
+      min_area: 800
+      max_area: 30000
+      min_score: 0.4
+      threshold: 0.55
+    suitcase:
+      min_area: 2000
+      max_area: 60000
+      min_score: 0.4
+      threshold: 0.55
+
+audio:
+  enabled: true
+  listen:
+    - bark
+    - scream
+    - speech
+    - yell
+    - crying
+    - laughter
+    - glass_breaking
+    - fire_alarm
+    - car_horn
+    - doorbell
+    - dog
+    - cat
+  filters:
+    bark:
+      threshold: 0.6
+    scream:
+      threshold: 0.65
+    speech:
+      threshold: 0.7
+    yell:
+      threshold: 0.6
+    crying:
+      threshold: 0.55
+    laughter:
+      threshold: 0.7
+    glass_breaking:
+      threshold: 0.5
+    fire_alarm:
+      threshold: 0.45
+    car_horn:
+      threshold: 0.55
+    doorbell:
+      threshold: 0.5
+    dog:
+      threshold: 0.6
+    cat:
+      threshold: 0.6
+
+record:
+  enabled: true
+  retain:
+    days: 7
+    mode: motion
+  alerts:
+    pre_capture: 5
+    post_capture: 10
+    retain:
+      days: 30
+      mode: active_objects
+  detections:
+    pre_capture: 3
+    post_capture: 8
+    retain:
+      days: 14
+      mode: active_objects
+
+snapshots:
+  enabled: true
+  bounding_box: true
+  crop: false
+  retain:
+    default: 14
+    mode: active_objects
+
+motion:
+  threshold: 30
+  contour_area: 200
+  improve_contrast: true
+  lightning_threshold: 0.8
+
+# ──────────────────────────────────────────────
+# Camera definitions — 4x Sonoff CAM-PT2
+# ──────────────────────────────────────────────
+
+cameras:
+  ptz_01:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/ptz_01
+          roles:
+            - record
+            - audio
+        - path: rtsp://127.0.0.1:8554/ptz_01_sub
+          roles:
+            - detect
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 10
+    onvif:
+      host: 192.168.5.1
+      port: 80
+      user: thingino
+      password: thingino
+    ptz:
+      enabled: true
+      autotracker:
+        enabled: true
+        calibrate_on_startup: true
+        timeout: 15
+        movement_weights: "0.3, 0.3, 0.2, 0.1, 0.1"
+        zooming: disabled
+        track:
+          - person
+          - car
+          - dog
+          - cat
+    zones:
+      yard_01:
+        coordinates: 0,0,640,0,640,360,0,360
+        objects:
+          - person
+          - car
+          - cat
+          - dog
+    review:
+      alerts:
+        labels:
+          - person
+          - car
+        required_zones:
+          - yard_01
+      detections:
+        labels:
+          - cat
+          - dog
+          - bicycle
+          - motorcycle
+
+  ptz_02:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/ptz_02
+          roles:
+            - record
+            - audio
+        - path: rtsp://127.0.0.1:8554/ptz_02_sub
+          roles:
+            - detect
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 10
+    onvif:
+      host: 192.168.5.2
+      port: 80
+      user: thingino
+      password: thingino
+    ptz:
+      enabled: true
+      autotracker:
+        enabled: true
+        calibrate_on_startup: true
+        timeout: 15
+        movement_weights: "0.3, 0.3, 0.2, 0.1, 0.1"
+        zooming: disabled
+        track:
+          - person
+          - car
+          - dog
+          - cat
+    zones:
+      yard_02:
+        coordinates: 0,0,640,0,640,360,0,360
+        objects:
+          - person
+          - car
+          - cat
+          - dog
+    review:
+      alerts:
+        labels:
+          - person
+          - car
+        required_zones:
+          - yard_02
+      detections:
+        labels:
+          - cat
+          - dog
+          - bicycle
+          - motorcycle
+
+  ptz_03:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/ptz_03
+          roles:
+            - record
+            - audio
+        - path: rtsp://127.0.0.1:8554/ptz_03_sub
+          roles:
+            - detect
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 10
+    onvif:
+      host: 192.168.5.3
+      port: 80
+      user: thingino
+      password: thingino
+    ptz:
+      enabled: true
+      autotracker:
+        enabled: true
+        calibrate_on_startup: true
+        timeout: 15
+        movement_weights: "0.3, 0.3, 0.2, 0.1, 0.1"
+        zooming: disabled
+        track:
+          - person
+          - car
+          - dog
+          - cat
+    zones:
+      yard_03:
+        coordinates: 0,0,640,0,640,360,0,360
+        objects:
+          - person
+          - car
+          - cat
+          - dog
+    review:
+      alerts:
+        labels:
+          - person
+          - car
+        required_zones:
+          - yard_03
+      detections:
+        labels:
+          - cat
+          - dog
+          - bicycle
+          - motorcycle
+
+  ptz_04:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/ptz_04
+          roles:
+            - record
+            - audio
+        - path: rtsp://127.0.0.1:8554/ptz_04_sub
+          roles:
+            - detect
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 10
+    onvif:
+      host: 192.168.5.4
+      port: 80
+      user: thingino
+      password: thingino
+    ptz:
+      enabled: true
+      autotracker:
+        enabled: true
+        calibrate_on_startup: true
+        timeout: 15
+        movement_weights: "0.3, 0.3, 0.2, 0.1, 0.1"
+        zooming: disabled
+        track:
+          - person
+          - car
+          - dog
+          - cat
+    zones:
+      yard_04:
+        coordinates: 0,0,640,0,640,360,0,360
+        objects:
+          - person
+          - car
+          - cat
+          - dog
+    review:
+      alerts:
+        labels:
+          - person
+          - car
+        required_zones:
+          - yard_04
+      detections:
+        labels:
+          - cat
+          - dog
+          - bicycle
+          - motorcycle

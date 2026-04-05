@@ -1,0 +1,21 @@
+{
+  "mqtt": {
+    "host": "192.168.6.1",
+    "port": 1883,
+    "use_ssl": false,
+    "username": "",
+    "password": "",
+    "client_id": "%hostname",
+    "topic": "thingino/%hostname/motion",
+    "message": "{\"timestamp\": \"%s\", \"camera\": \"%hostname\", \"event\": \"motion\"}",
+    "send_photo": true,
+    "topic_photo": "thingino/%hostname/motion/snapshot"
+  },
+  "storage": {
+    "mount": "/mnt/mmc",
+    "device_path": "%hostname",
+    "template": "motion-%Y%m%d-%H%M%S",
+    "send_photo": true,
+    "send_video": true
+  }
+}
